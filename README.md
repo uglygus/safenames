@@ -17,8 +17,8 @@ Requires user confirmation before any changes are made.
 		`COM1 COM2 COM3 COM4COM5 COM6 COM7 COM8 COM9`
 		`LPT1 LPT2 LPT3 LPT4 LPT5 LPT6 LPT7 LPT8 LPT9`
 		`$ATTRDEF $BADCLUS $BITMAP $BOOT $LOGFILE $MFT $MFTMIRR`
-		`PAGEFILE.SYS $SECURE $UPCASE $VOLUME $EXTEND $EXTEND\\$OJID`
-		`$EXTEND\\$QUOTA $EXTEND\\$REPARSE`
+		`PAGEFILE.SYS $SECURE $UPCASE $VOLUME $EXTEND $EXTEND\$OJID`
+		`$EXTEND\$QUOTA $EXTEND\$REPARSE`
 
 ### Strips Mac illegals
 
@@ -48,3 +48,4 @@ Requires user confirmation before any changes are made.
 * -i --interactive option (currently default)
 * --fill_char `=` option to set fill char instead of defaulting to `_`
 * option to delete the bad character instead of replacing with `_`
+* leading '-' in filenames is a bad idea

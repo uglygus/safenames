@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #
 #
-'''
+"""
 safenames.py
 Walks a directory tree and tests each file and directory for cross platform legality.
 Requires user confirmation before any changes are made.
-'''
+"""
 
 from __future__ import print_function
 
@@ -50,28 +50,28 @@ else:
             sys.exit()
         return ch
 
-badWindowsChars = r':<>"\/|?*' + '\n' + '\r' + '\x7F'
+bad_windows_chars = r':<>"\/|?*' + '\n' + '\r' + '\x7F'
 for x in range(0, 31):
-    badWindowsChars + chr(x)
+    bad_windows_chars + chr(x)
 
-badLinuxChars = "/" + "\00"
-badMacChars = ":" + "\00"
-badPersonalChars = '\t'
+bad_linux_chars = "/" + "\00"
+bad_mac_chars = ":" + "\00"
+bad_ideas_chars = '\t'
 
-badChars = badWindowsChars + badLinuxChars + badMacChars + badPersonalChars
+bad_chars = bad_windows_chars + bad_linux_chars + bad_mac_chars + bad_ideas_chars
 
 # must be uppercase
-badWindowsNames = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
-                   'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-                   'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
-                   '$ATTRDEF', '$BADCLUS', ',$BITMAP', '$BOOT', '$LOGFILE', '$MFT', '$MFTMIRR',
-                   'PAGEFILE.SYS', '$SECURE', '$UPCASE', '$VOLUME', '$EXTEND', '$EXTEND\$OBJID',
-                   '$EXTEND\$QUOTA', '$EXTEND\$REPARSE',
-                   ]
+bad_windows_names = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
+                     'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+                     'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
+                     '$ATTRDEF', '$BADCLUS', ',$BITMAP', '$BOOT', '$LOGFILE', '$MFT', '$MFTMIRR',
+                     'PAGEFILE.SYS', '$SECURE', '$UPCASE', '$VOLUME', '$EXTEND', '$EXTEND\$OBJID',
+                     '$EXTEND\$QUOTA', '$EXTEND\$REPARSE',
+                     ]
 
 
-def isBadChar(filename, charList):
-    for char in charList:
+def is_bad_char(filename, charlist):
+    for char in charlist:
         # print('char = ', char)
         if char in filename:
             print("illegal__%s__" % char, end='')
@@ -80,7 +80,7 @@ def isBadChar(filename, charList):
     return False
 
 
-def endsInWhiteSpace(item):
+def ends_in_white_space(item):
     if item == item.rstrip():
         return False
     else:
@@ -111,22 +111,23 @@ def printable(char):
     return char
 
 
-def renameItem(item, root):
+def rename_item(item, root):
     print(os.path.join(root, item))
     print('illegal Filename: ', item)
-    subItem = item + '_legal'
-    newName = raw_input('Enter new filename  default:[' + subItem + ']: ')
+    subitem = item + '_legal'
+    # noinspection PyCompatibility
+    newname = raw_input('Enter new filename  default:[' + subitem + ']: ')
 
-    if newName == '':
-        newName = subItem
+    if newname == '':
+        newname = subitem
 
-    print('newName=', newName)
+    print('newname=', newname)
 
-    # overwrites silently if newName exists
-    os.rename(os.path.join(root, item), os.path.join(root, newName))
+    # overwrites silently if newname exists
+    os.rename(os.path.join(root, item), os.path.join(root, newname))
 
 
-def cleanItem(item, root):
+def clean_item(item, root):
     print(os.path.join(root, item))
     cleaned = False
 
@@ -134,35 +135,39 @@ def cleanItem(item, root):
         print("Icon\\r : Not Windows compatible but OSX system filename. Will not change.")
         return
 
-    wrongChar = isBadChar(item, badChars)
-    if wrongChar:
-        print('wrongChar = ', wrongChar)
-        itemClean = item.replace(wrongChar, '_')
-        print(item, ' --> ', itemClean)
-        cleaned = itemClean
+    wrongchar = is_bad_char(item, bad_chars)
+    if wrongchar:
+        print('wrongchar = ', wrongchar)
+        item_clean = item.replace(wrongchar, '_')
+        print(item, ' --> ', item_clean)
+        cleaned = item_clean
 
-        print('replace \'' + printable(wrongChar) +
+        print('replace \'' + printable(wrongchar) +
               '\' with \'_\'  (Y/n/x:delete file) ?')
         ch = getch()
         print('ch==' + printable(ch) + '==')
         if ch.lower() == 'y' or ch == '\r':
-            os.rename(os.path.join(root, item), os.path.join(root, itemClean))
-            cleaned = itemClean
+            old = os.path.join(root, item)
+            new = os.path.join(root, item_clean)
+            print ('old=', old, '\nnew=', new)
+            os.rename(old, new)
+            print('renamed!')
+            cleaned = item_clean
         if ch.lower() == 'x':
             os.unlink(os.path.join(root, item))
 
         print('\n')
 
-    if endsInWhiteSpace(item):
+    if ends_in_white_space(item):
         print('directory ends in White==' + item + '==')
         print('replace ending white space?  (Y/n)?')
         ch = getch()
         # print('ch==',ch)
-        itemStripped = item.rstrip()
+        item_stripped = item.rstrip()
         if ch.lower() == 'y' or ch == '\r':
             os.rename(os.path.join(root, item),
-                      os.path.join(root, itemStripped))
-            cleaned = itemStripped
+                      os.path.join(root, item_stripped))
+            cleaned = item_stripped
         print('\n')
     return cleaned
 
@@ -177,16 +182,17 @@ def main():
     for directory in [args.dir]:
         for root, dirs, files in os.walk(directory):
             for item in dirs:
-                while cleanItem(item, root):
-                    cleanItem(item, root)
+                item = clean_item(item, root)
+                while item:
+                    item = clean_item(item, root)
 
             for item in files:
-                if item.upper() in badWindowsNames:
-                    renameItem(item, root)
+                if item.upper() in bad_windows_names:
+                    rename_item(item, root)
 
-                item = cleanItem(item, root)
+                item = clean_item(item, root)
                 while item:
-                    item = cleanItem(item, root)
+                    item = clean_item(item, root)
 
 
 if __name__ == '__main__':
