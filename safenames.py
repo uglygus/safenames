@@ -21,7 +21,6 @@ except ImportError:
     try:
         import msvcrt
     except ImportError:
-        # FIXME what to do on other platforms?
         raise ImportError('getch not available')
     else:
         getch = msvcrt.getch
@@ -58,13 +57,14 @@ bad_linux_chars = "/" + "\00"
 bad_mac_chars = ":" + "\00"
 bad_ideas_chars = '\t'
 
-bad_chars = bad_windows_chars + bad_linux_chars + bad_mac_chars + bad_ideas_chars
+bad_chars_all = bad_windows_chars + \
+    bad_linux_chars + bad_mac_chars + bad_ideas_chars
 
 # must be uppercase
 bad_windows_names = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
                      'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
                      'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
-                     '$ATTRDEF', '$BADCLUS', ',$BITMAP', '$BOOT', '$LOGFILE', '$MFT', '$MFTMIRR',
+                     '$ATTRDEF', '$BADCLUS', '$BITMAP', '$BOOT', '$LOGFILE', '$MFT', '$MFTMIRR',
                      'PAGEFILE.SYS', '$SECURE', '$UPCASE', '$VOLUME', '$EXTEND', '$EXTEND\$OBJID',
                      '$EXTEND\$QUOTA', '$EXTEND\$REPARSE',
                      ]
@@ -88,9 +88,9 @@ def ends_in_white_space(item):
 
 
 def printable(char):
+
     if char is None:
         return ''
-
     if char == "\n":
         return "\\n"
     if char == "\r":
@@ -128,6 +128,9 @@ def rename_item(item, root):
 
 
 def clean_item(item, root):
+
+    old = os.path.join(root, item)
+
     print(os.path.join(root, item))
     cleaned = False
 
@@ -135,26 +138,30 @@ def clean_item(item, root):
         print("Icon\\r : Not Windows compatible but OSX system filename. Will not change.")
         return
 
-    wrongchar = is_bad_char(item, bad_chars)
-    if wrongchar:
-        print('wrongchar = ', wrongchar)
-        item_clean = item.replace(wrongchar, '_')
-        print(item, ' --> ', item_clean)
-        cleaned = item_clean
+    item_clean = item
+    for c in bad_chars_all:
+        item_clean = item_clean.replace(c, '_')
 
-        print('replace \'' + printable(wrongchar) +
-              '\' with \'_\'  (Y/n/x:delete file) ?')
+    if item_clean != item:
+        print('replace \'' + item +
+              '\' with \'', item_clean, '  (Y/n/t/x  :Yes/no/type/delete) ?')
         ch = getch()
-        print('ch==' + printable(ch) + '==')
+
         if ch.lower() == 'y' or ch == '\r':
-            old = os.path.join(root, item)
             new = os.path.join(root, item_clean)
-            print ('old=', old, '\nnew=', new)
+            #print ('old=', old, '\nnew=', new)
             os.rename(old, new)
-            print('renamed!')
+            # print('renamed!')
             cleaned = item_clean
+
         if ch.lower() == 'x':
             os.unlink(os.path.join(root, item))
+
+        if ch.lower() == 't':
+            new_name = raw_input("new filename: ")
+            new = os.path.join(root, new_name)
+            #print ('old=', old, '\nnew=', new)
+            os.rename(old, new)
 
         print('\n')
 
@@ -181,6 +188,7 @@ def main():
 
     for directory in [args.dir]:
         for root, dirs, files in os.walk(directory):
+
             for item in dirs:
                 item = clean_item(item, root)
                 while item:
