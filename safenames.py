@@ -51,7 +51,7 @@ else:
 
 bad_windows_chars = r':<>"\/|?*' + '\n' + '\r' + '\x7F'
 for x in range(0, 31):
-    bad_windows_chars + chr(x)
+    bad_windows_chars += chr(x)
 
 bad_linux_chars = "/" + "\00"
 bad_mac_chars = ":" + "\00"
@@ -125,6 +125,12 @@ def rename_item(item, root):
 
     # overwrites silently if newname exists
     os.rename(os.path.join(root, item), os.path.join(root, newname))
+
+
+def replace_bad_chars(filename, bad_chars):
+    for c in bad_chars:
+        filename.replace(c, '_')
+    return filename
 
 
 def clean_item(item, root):
