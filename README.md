@@ -1,4 +1,4 @@
-# safefilenames.py
+# safenames.py
 
 
 Walks a directory tree and tests each file and directory for cross platform legality.
@@ -38,7 +38,7 @@ Requires user confirmation before any changes are made.
 
 ## Bugs
 
-* When renaming a file if the new file already exists it will be silently overwritten.
+* Please report them on github. 
 
 ## Todo
 * catch Windows anomolies periods and spaces only names not allowed
@@ -46,6 +46,6 @@ Requires user confirmation before any changes are made.
 * -v --verbose option
 * -auto option
 * -i --interactive option (currently default)
-* --fill_char `=` option to set fill char instead of defaulting to `_`
+* --fill_char option to set fill char instead of defaulting to `_`
 * option to delete the bad character instead of replacing with `_`
 * leading '-' in filenames is a bad idea

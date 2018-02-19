@@ -5,6 +5,8 @@
 safenames.py
 Walks a directory tree and tests each file and directory for cross platform legality.
 Requires user confirmation before any changes are made.
+
+Tested on Mac, Linux and OSX
 """
 
 from __future__ import print_function
@@ -12,6 +14,7 @@ from __future__ import print_function
 import os
 import argparse
 import sys
+import re
 
 try:
     import tty
@@ -61,7 +64,7 @@ bad_chars_all = bad_windows_chars + \
     bad_linux_chars + bad_mac_chars + bad_ideas_chars
 
 # must be uppercase
-bad_windows_names = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
+BAD_WINDOWS_NAMES = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
                      'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
                      'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
                      '$ATTRDEF', '$BADCLUS', '$BITMAP', '$BOOT', '$LOGFILE', '$MFT', '$MFTMIRR',
@@ -111,7 +114,7 @@ def printable(char):
     return char
 
 
-def rename_item(item, root):
+def type_newname(item, root):
     print(os.path.join(root, item))
     print('illegal Filename: ', item)
     subitem = item + '_legal'
@@ -124,7 +127,8 @@ def rename_item(item, root):
     print('newname=', newname)
 
     # overwrites silently if newname exists
-    os.rename(os.path.join(root, item), os.path.join(root, newname))
+    #rename_item(old, new)
+    rename_item(os.path.join(root, item), os.path.join(root, newname))
 
 
 def replace_bad_chars(filename, bad_chars):
@@ -133,8 +137,52 @@ def replace_bad_chars(filename, bad_chars):
     return filename
 
 
-def clean_item(item, root):
+def name_exists(item):
 
+    print('name_exists', name_exists)
+
+    if os.path.exists(item):
+        print('path {} already exists updating version.'.format(item))
+        root, ext = os.path.splitext(item)
+        p = re.compile('\((\d+)\)\Z')
+        m = p.findall(root)
+        print('m==', m)
+
+        if m == []:
+            print('no version yet')
+            new = root + ' (1)' + ext
+            print('calling name_exists again')
+            new = name_exists(new)
+
+        else:
+            version = m[0]
+            old_version = '(' + version + ')'
+            version = int(version) + 1
+    #        print('version=',version)
+            new_version = '(' + str(version) + ')'
+
+            root = root.replace(old_version, new_version)
+
+            new = root + ext
+        return new
+    else:
+        return item
+
+
+def rename_item(old, new):
+
+    new = name_exists(new)
+
+    try:
+        os.rename(old, new)
+    except OSError as e:
+        print ('OSError!', e)
+
+
+def clean_item(item, root):
+    """
+    returns new filename or False if the file does not need to be cleaned
+    """
     old = os.path.join(root, item)
 
     print(os.path.join(root, item))
@@ -149,14 +197,20 @@ def clean_item(item, root):
         item_clean = item_clean.replace(c, '_')
 
     if item_clean != item:
-        print('replace \'' + item +
-              '\' with \'', item_clean, '  (Y/n/t/x  :Yes/no/type/delete) ?')
+        item_clean = name_exists(os.path.join(root, item_clean))
+
+        xxx, item_cleaned = os.path.split(item_clean)
+#        print('xxx=', xxx, '\titem_cleaned2 = ', item_cleaned)
+
+        item_clean = item_cleaned
+
+        print('replace "{}" --> "{}" (Y/n/t/x : Yes/no/type/delete) ?'.format(item, item_clean))
         ch = getch()
 
         if ch.lower() == 'y' or ch == '\r':
             new = os.path.join(root, item_clean)
             #print ('old=', old, '\nnew=', new)
-            os.rename(old, new)
+            rename_item(old, new)
             # print('renamed!')
             cleaned = item_clean
 
@@ -167,21 +221,38 @@ def clean_item(item, root):
             new_name = raw_input("new filename: ")
             new = os.path.join(root, new_name)
             #print ('old=', old, '\nnew=', new)
-            os.rename(old, new)
-
-        print('\n')
+            rename_item(old, new)
 
     if ends_in_white_space(item):
-        print('directory ends in White==' + item + '==')
+        print('item ends in whitespace "{}"'.format(item))
         print('replace ending white space?  (Y/n)?')
-        ch = getch()
+
         # print('ch==',ch)
         item_stripped = item.rstrip()
+        if item_stripped == '':
+            item_stripped = "_"
+            print('file "{}" is only only whitespace!'.format(item))
+
+        print('replace with "_" (Y/n/t/x : Yes/no/type/delete)')
+        ch = getch()
+
+        if ch.lower() == 'x':
+            os.unlink(os.path.join(root, item))
+
+        if ch.lower() == 't':
+            new_name = raw_input("new filename: ")
+            new = os.path.join(root, new_name)
+            #print ('old=', old, '\nnew=', new)
+            rename_item(old, new)
+            cleaned = new
+
         if ch.lower() == 'y' or ch == '\r':
-            os.rename(os.path.join(root, item),
-                      os.path.join(root, item_stripped))
+
+            print('renaming "{}" --> "{}"'.format(item, item_stripped))
+            rename_item(os.path.join(root, item),
+                        os.path.join(root, item_stripped))
             cleaned = item_stripped
-        print('\n')
+
     return cleaned
 
 
@@ -193,16 +264,13 @@ def main():
     args = parser.parse_args()
 
     for directory in [args.dir]:
-        for root, dirs, files in os.walk(directory):
+        for root, dirs, files in os.walk(directory, topdown=False):
 
-            for item in dirs:
-                item = clean_item(item, root)
-                while item:
-                    item = clean_item(item, root)
+            all_items = dirs + files
 
-            for item in files:
-                if item.upper() in bad_windows_names:
-                    rename_item(item, root)
+            for item in all_items:
+                if item.upper() in BAD_WINDOWS_NAMES:
+                    type_newname(item, root)
 
                 item = clean_item(item, root)
                 while item:
