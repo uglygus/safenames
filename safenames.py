@@ -139,19 +139,16 @@ def replace_bad_chars(filename, bad_chars):
 
 def name_exists(item):
 
-    print('name_exists', name_exists)
+    xxx, item_filename = os.path.split(item)
 
     if os.path.exists(item):
-        print('path {} already exists updating version.'.format(item))
+        print('"{}" already exists updating version.'.format(item_filename))
         root, ext = os.path.splitext(item)
         p = re.compile('\((\d+)\)\Z')
         m = p.findall(root)
-        print('m==', m)
 
         if m == []:
-            print('no version yet')
             new = root + ' (1)' + ext
-            print('calling name_exists again')
             new = name_exists(new)
 
         else:
@@ -204,8 +201,9 @@ def clean_item(item, root):
 
         item_clean = item_cleaned
 
-        print('replace "{}" --> "{}" (Y/n/t/x : Yes/no/type/delete) ?'.format(item, item_clean))
+        print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): '.format(item, item_clean), end="")
         ch = getch()
+        print(ch)
 
         if ch.lower() == 'y' or ch == '\r':
             new = os.path.join(root, item_clean)
@@ -235,6 +233,7 @@ def clean_item(item, root):
 
         print('replace with "_" (Y/n/t/x : Yes/no/type/delete)')
         ch = getch()
+        print(ch)
 
         if ch.lower() == 'x':
             os.unlink(os.path.join(root, item))
