@@ -32,13 +32,19 @@ Requires user confirmation before any changes are made.
 
 * tab `\t`
 
+### corrects filename named simply hyphen '-'
+
+* hyphen `-`
+
+
+
 ## Usage
 
 `safefilenames.py [-h] dir`
 
 ## Bugs
 
-* Please report them on github. 
+* Please report them on github.
 
 ## Todo
 * catch Windows anomolies periods and spaces only names not allowed

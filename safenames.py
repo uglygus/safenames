@@ -68,9 +68,10 @@ BAD_WINDOWS_NAMES = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
                      'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
                      'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
                      '$ATTRDEF', '$BADCLUS', '$BITMAP', '$BOOT', '$LOGFILE', '$MFT', '$MFTMIRR',
-                     'PAGEFILE.SYS', '$SECURE', '$UPCASE', '$VOLUME', '$EXTEND', '$EXTEND\$OBJID',
-                     '$EXTEND\$QUOTA', '$EXTEND\$REPARSE',
+                     'PAGEFILE.SYS', '$SECURE', '$UPCASE', '$VOLUME', '$EXTEND',
                      ]
+
+BAD_IDEAS_NAMES = ['-']
 
 
 def is_bad_char(filename, charlist):
@@ -221,17 +222,19 @@ def clean_item(item, root):
             #print ('old=', old, '\nnew=', new)
             rename_item(old, new)
 
-    if ends_in_white_space(item):
-        print('item ends in whitespace "{}"'.format(item))
-        print('replace ending white space?  (Y/n)?')
+    fname, ext = os.path.splitext(item)
+
+    if ends_in_white_space(fname):
+        print('item ends in whitespace "{}"'.format(fname))
+       # print('replace ending white space?  (Y/n)?')
 
         # print('ch==',ch)
-        item_stripped = item.rstrip()
+        item_stripped = fname.rstrip()
         if item_stripped == '':
             item_stripped = "_"
-            print('file "{}" is only only whitespace!'.format(item))
+            print('file "{}" is only whitespace!'.format(froot))
 
-        print('replace with "_" (Y/n/t/x : Yes/no/type/delete)')
+        print('strip trailing whitespace? (Y/n/t/x : Yes/no/type/delete)')
         ch = getch()
         print(ch)
 
@@ -246,11 +249,10 @@ def clean_item(item, root):
             cleaned = new
 
         if ch.lower() == 'y' or ch == '\r':
-
-            print('renaming "{}" --> "{}"'.format(item, item_stripped))
+            print('renaming "{}" --> "{}"'.format(item, item_stripped + ext))
             rename_item(os.path.join(root, item),
-                        os.path.join(root, item_stripped))
-            cleaned = item_stripped
+                        os.path.join(root, item_stripped + ext))
+            cleaned = item_stripped + ext
 
     return cleaned
 
@@ -269,6 +271,9 @@ def main():
 
             for item in all_items:
                 if item.upper() in BAD_WINDOWS_NAMES:
+                    type_newname(item, root)
+
+                if item.upper() in BAD_IDEAS_NAMES:
                     type_newname(item, root)
 
                 item = clean_item(item, root)
