@@ -190,6 +190,15 @@ def clean_item(item, root):
         print("Icon\\r : Not Windows compatible but OSX system filename. Will not change.")
         return
 
+    r1 = re.compile(r".+\d\d\d\d\d\d-\d\d\d\d\d\d\.abcd.$")
+    if r1.search(item):
+        print('its an OSX Address Book file Skipping!')
+        return
+
+    if ':' in item and (item.endswith('.abcds' or item.endswith('.abcdp')) ): ##p
+        print('Address Book file skipping')
+
+
     item_clean = item
     for c in bad_chars_all:
         item_clean = item_clean.replace(c, '_')
