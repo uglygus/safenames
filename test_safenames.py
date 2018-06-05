@@ -24,10 +24,11 @@ def mkdirquiet(targetpath):
 def main():
     tmpdir = '/tmp/test_safenames/'
 
+    shutil.rmtree(tmpdir)
     mkdirquiet(tmpdir)
 
     # , 'ends in space ', 'ends in space and tab \t']
-    badnames = ['ends in tab\t']
+    badnames = ['|starts with illegal'] #,'| three <> illegals', 'ends in tab\t']
 
     for fn in badnames:
         fn = tmpdir + fn
@@ -35,6 +36,7 @@ def main():
 
     call(["./safenames.py", tmpdir, '--debug'])
 
+    shutil.rmtree(tmpdir)
 
 if __name__ == '__main__':
     main()
