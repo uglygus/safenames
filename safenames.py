@@ -16,6 +16,7 @@ import argparse
 import sys
 import re
 
+
 try:
     import tty
     import termios
@@ -52,6 +53,8 @@ else:
             sys.exit()
         return ch
 
+quiet = False
+
 bad_windows_chars = r':<>"\/|?*' + '\n' + '\r' + '\x7F'
 for x in range(0, 31):
     bad_windows_chars += chr(x)
@@ -74,9 +77,17 @@ BAD_WINDOWS_NAMES = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
 BAD_IDEAS_NAMES = ['-']
 
 
+log_verbose = False
+log_debug = False
+
+
+def debug(message):
+    if log_debug:
+        print(message)
+
+
 def is_bad_char(filename, charlist):
     for char in charlist:
-        # print('char = ', char)
         if char in filename:
             print("illegal__%s__" % char, end='')
             return char
@@ -85,6 +96,7 @@ def is_bad_char(filename, charlist):
 
 
 def ends_in_white_space(item):
+    debug('ends_in_white_space(item={})'.format(item))
     if item == item.rstrip():
         return False
     else:
@@ -92,7 +104,6 @@ def ends_in_white_space(item):
 
 
 def printable(char):
-
     if char is None:
         return ''
     if char == "\n":
@@ -116,10 +127,11 @@ def printable(char):
 
 
 def type_newname(item, root):
+    debug('type_newname(item={}, root={})'.format(item, root))
+
     print(os.path.join(root, item))
     print('illegal Filename: ', item)
     subitem = item + '_legal'
-    # noinspection PyCompatibility
     newname = raw_input('Enter new filename  default:[' + subitem + ']: ')
 
     if newname == '':
@@ -128,18 +140,18 @@ def type_newname(item, root):
     print('newname=', newname)
 
     # overwrites silently if newname exists
-    #rename_item(old, new)
     rename_item(os.path.join(root, item), os.path.join(root, newname))
 
 
 def replace_bad_chars(filename, bad_chars):
+    debug('replace_bad_chars(item={}, root={})'.format(item, root))
     for c in bad_chars:
         filename.replace(c, '_')
     return filename
 
 
 def name_exists(item):
-
+    debug('name_exists(item={})'.format(item))
     xxx, item_filename = os.path.split(item)
 
     if os.path.exists(item):
@@ -148,7 +160,7 @@ def name_exists(item):
         p = re.compile('\((\d+)\)\Z')
         m = p.findall(root)
 
-        if m == []:
+        if not m:
             new = root + ' (1)' + ext
             new = name_exists(new)
 
@@ -156,7 +168,6 @@ def name_exists(item):
             version = m[0]
             old_version = '(' + version + ')'
             version = int(version) + 1
-    #        print('version=',version)
             new_version = '(' + str(version) + ')'
 
             root = root.replace(old_version, new_version)
@@ -168,36 +179,34 @@ def name_exists(item):
 
 
 def rename_item(old, new):
-
+    debug('rename_item(old={}, new={})'.format(old, new))
     new = name_exists(new)
-
+    print('old="' + old + '",  new="' + new)
     try:
         os.rename(old, new)
     except OSError as e:
-        print ('OSError!', e)
+        print('OSError!', e)
 
 
 def clean_item(item, root):
     """
     returns new filename or False if the file does not need to be cleaned
     """
+    debug('clean_item(item={}, root={})'.format(item, root))
     old = os.path.join(root, item)
 
-    print(os.path.join(root, item))
+    if log_verbose:
+        print(os.path.join(root, item))
+
     cleaned = False
 
     if item == "Icon\r":
         print("Icon\\r : Not Windows compatible but OSX system filename. Will not change.")
         return
 
-    r1 = re.compile(r".+\d\d\d\d\d\d-\d\d\d\d\d\d\.abcd.$")
-    if r1.search(item):
-        print('its an OSX Address Book file Skipping!')
+    if ':' in item and (item.endswith('.abcdg') or item.endswith('.abcdi') or item.endswith('.abcdp') or item.endswith('.abcds')):
+        print('{} contains an illegal colon but OSX Address Book file. Will not change.'.format(item))
         return
-
-    if ':' in item and (item.endswith('.abcds' or item.endswith('.abcdp')) ): ##p
-        print('Address Book file skipping')
-
 
     item_clean = item
     for c in bad_chars_all:
@@ -207,17 +216,17 @@ def clean_item(item, root):
         item_clean = name_exists(os.path.join(root, item_clean))
 
         xxx, item_cleaned = os.path.split(item_clean)
-#        print('xxx=', xxx, '\titem_cleaned2 = ', item_cleaned)
 
         item_clean = item_cleaned
 
+        print('{}/{}'.format(root, item))
         print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): '.format(item, item_clean), end="")
         ch = getch()
         print(ch)
 
         if ch.lower() == 'y' or ch == '\r':
             new = os.path.join(root, item_clean)
-            #print ('old=', old, '\nnew=', new)
+            # print ('old=', old, '\nnew=', new)
             rename_item(old, new)
             # print('renamed!')
             cleaned = item_clean
@@ -228,21 +237,20 @@ def clean_item(item, root):
         if ch.lower() == 't':
             new_name = raw_input("new filename: ")
             new = os.path.join(root, new_name)
-            #print ('old=', old, '\nnew=', new)
+            # print ('old=', old, '\nnew=', new)
             rename_item(old, new)
 
     fname, ext = os.path.splitext(item)
 
     if ends_in_white_space(fname):
-        print('item ends in whitespace "{}"'.format(fname))
-       # print('replace ending white space?  (Y/n)?')
+        debug('ends_in_white_space {}'.format(fname))
 
-        # print('ch==',ch)
         item_stripped = fname.rstrip()
         if item_stripped == '':
             item_stripped = "_"
-            print('file "{}" is only whitespace!'.format(froot))
+            print('file "{}" is only whitespace!'.format(root))
 
+        print('{}/{}'.format(root, fname))
         print('strip trailing whitespace? (Y/n/t/x : Yes/no/type/delete)')
         ch = getch()
         print(ch)
@@ -253,7 +261,7 @@ def clean_item(item, root):
         if ch.lower() == 't':
             new_name = raw_input("new filename: ")
             new = os.path.join(root, new_name)
-            #print ('old=', old, '\nnew=', new)
+            # print ('old=', old, '\nnew=', new)
             rename_item(old, new)
             cleaned = new
 
@@ -267,11 +275,22 @@ def clean_item(item, root):
 
 
 def main():
+
+    global log_debug
+    global log_verbose
+
     parser = argparse.ArgumentParser(
-        description="catch and correct filenames that are not cross compatible")
+        description="Catch and correct direcotry and filenames that are not cross compatible. ")
     parser.add_argument("dir", help='directory to clean')
-    parser.parse_args()
+    parser.add_argument('--debug', action='store_true', help='more debug info')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='list everyfile as processed')
     args = parser.parse_args()
+
+    if (args.verbose or args.debug):
+        log_verbose = True
+    if (args.debug):
+        log_debug = True
 
     for directory in [args.dir]:
         for root, dirs, files in os.walk(directory, topdown=False):
