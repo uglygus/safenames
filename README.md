@@ -37,6 +37,15 @@ Requires user confirmation before any changes are made.
 * hyphen `-`
 
 
+## recognizes OSX system files
+and gives the option to skip them.
+
+* Icon\r
+* .AppleDouble[...]::EA::com.apple.quarantine
+* *.abcdg (Addressbook file)
+* *.abcdi (Addressbook file)
+* *.abcdp (Addressbook file)
+* *.abcds (Addressbook file)
 
 ## Usage
 

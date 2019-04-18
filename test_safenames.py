@@ -12,8 +12,6 @@ from subprocess import call
 
 
 def mkdirquiet(targetpath):
-    """Make a directory called targetpath. Don't complain if it already exists.
-    """
     try:
         os.mkdir(targetpath)
     except EnvironmentError as e:
@@ -21,14 +19,23 @@ def mkdirquiet(targetpath):
             raise
 
 
+def rmtreequiet(targetpath):
+    try:
+        shutil.rmtree(targetpath)
+    except EnvironmentError as e:
+        if e.errno != errno.ENOENT:
+            raise
+
+
 def main():
     tmpdir = '/tmp/test_safenames/'
 
-    shutil.rmtree(tmpdir)
+    rmtreequiet(tmpdir)
     mkdirquiet(tmpdir)
 
     # , 'ends in space ', 'ends in space and tab \t']
-    badnames = ['|starts with illegal'] #,'| three <> illegals', 'ends in tab\t']
+    # ,'| three <> illegals', 'ends in tab\t']
+    badnames = ['|starts with illegal']
 
     for fn in badnames:
         fn = tmpdir + fn
@@ -36,7 +43,11 @@ def main():
 
     call(["./safenames.py", tmpdir, '--debug'])
 
-    shutil.rmtree(tmpdir)
+
+
+
+   #rmtreequiet(tmpdir)
+
 
 if __name__ == '__main__':
     main()
