@@ -53,8 +53,6 @@ else:
             sys.exit()
         return ch
 
-quiet = False
-
 bad_windows_chars = r':<>"\/|?*' + '\n' + '\r' + '\x7F'
 for x in range(0, 31):
     bad_windows_chars += chr(x)
@@ -77,19 +75,20 @@ BAD_WINDOWS_NAMES = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
 BAD_IDEAS_NAMES = ['-']
 
 
-log_verbose = False
-log_debug = False
+commandline_args = None
 
 
 def debug(message):
-    if log_debug:
+    global commandline_args
+    if commandline_args.debug:
         print(message)
 
 
 def is_bad_char(filename, charlist):
+    debug('is_bad_char({}, {})'.format(filename, charlist))
     for char in charlist:
         if char in filename:
-            print("illegal__%s__" % char, end='')
+            print("illegal__{}__".format(char))
             return char
 
     return False
@@ -142,11 +141,19 @@ def type_newname(item, root):
     # overwrites silently if newname exists
     rename_item(os.path.join(root, item), os.path.join(root, newname))
 
+def trimwhite(filename):
+    debug('trimwhite(filename="{}")'.format(filename))
+    filename = ' '.join(filename.split())
+    debug('trimwhite(filename="{}")'.format(filename))
+    return filename
 
 def replace_bad_chars(filename, bad_chars):
-    debug('replace_bad_chars(item={}, root={})'.format(item, root))
+    debug('replace_bad_chars(filename="{}" bad_chars="{}")'.format(filename,bad_chars))
     for c in bad_chars:
-        filename.replace(c, '_')
+        if (c in filename):
+            print('\tbad character "{}"'.format(printable(c)))
+            filename = filename.replace(c, '_')
+    debug('replace_bad_chars returning="{}"'.format(filename))
     return filename
 
 
@@ -190,36 +197,51 @@ def rename_item(old, new):
 
 def clean_item(item, root):
     """
-    returns new filename or False if the file does not need to be cleaned
+    returns new filename
     """
     debug('clean_item(item={}, root={})'.format(item, root))
     old = os.path.join(root, item)
 
-    if log_verbose:
+    if commandline_args.verbose:
         print(os.path.join(root, item))
 
-    cleaned = False
+    cleaned = item
 
     if item == "Icon\r":
-        print("Icon\\r : Not Windows compatible but OSX system filename. Will not change.")
+        # - we should this back on if we add a --verbose flag
+        #print('"Icon\\r" : Not Windows compatible but OSX system filename. Will not change.')
         return
 
-    if ':' in item and (item.endswith('.abcdg') or item.endswith('.abcdi') or item.endswith('.abcdp') or item.endswith('.abcds')):
-        print('{} contains an illegal colon but OSX Address Book file. Will not change.'.format(item))
+    if ':' in item and (item.endswith('.abcdg') or item.endswith(
+            '.abcdi') or item.endswith('.abcdp') or item.endswith('.abcds')):
+        #print(
+            # - we should turn this back on if we add a --verbose flag
+            #'"{}" contains an illegal colon but OSX Address Book file. Will not change.'.format(item))
         return
+
+    if '.AppleDouble' in root:
+        if '.Parent::EA' in item or '::EA::' in item or '::EA' in item:
+            #print(
+                # - we should turn this back on if we add a --verbose flag
+                #'"{}" contains an illegal colon but is an OSX Appledouble file. Will not change.'.format(item))
+            return
+
 
     item_clean = item
-    for c in bad_chars_all:
-        item_clean = item_clean.replace(c, '_')
+
+    item_clean = replace_bad_chars(item_clean, bad_chars_all)
+
+    if commandline_args.trimwhite:
+        item_clean = trimwhite(item_clean)
 
     if item_clean != item:
         item_clean = name_exists(os.path.join(root, item_clean))
 
-        xxx, item_cleaned = os.path.split(item_clean)
+        xxx, item_clean = os.path.split(item_clean)
 
-        item_clean = item_cleaned
 
-        print('{}/{}'.format(root, item))
+
+        print('{}{}'.format(root, item))
         print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): '.format(item, item_clean), end="")
         ch = getch()
         print(ch)
@@ -243,7 +265,6 @@ def clean_item(item, root):
     fname, ext = os.path.splitext(item)
 
     if ends_in_white_space(fname):
-        debug('ends_in_white_space {}'.format(fname))
 
         item_stripped = fname.rstrip()
         if item_stripped == '':
@@ -276,23 +297,26 @@ def clean_item(item, root):
 
 def main():
 
-    global log_debug
-    global log_verbose
+    #    global log_debug
+    global commandline_args
 
     parser = argparse.ArgumentParser(
         description="Catch and correct direcotry and filenames that are not cross compatible. ")
     parser.add_argument("dir", help='directory to clean')
+    parser.add_argument('--trimwhite', action='store_true', help='collapse multple white spaces into one.')
     parser.add_argument('--debug', action='store_true', help='more debug info')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='list everyfile as processed')
-    args = parser.parse_args()
 
-    if (args.verbose or args.debug):
-        log_verbose = True
-    if (args.debug):
-        log_debug = True
+    commandline_args = parser.parse_args()
 
-    for directory in [args.dir]:
+    if commandline_args.debug:
+        commandline_args.verbose=True
+
+    debug('commandline_args.verbose = {}'.format(commandline_args.verbose))
+    debug('commandline_args.debug   = {}'.format(commandline_args.debug))
+
+    for directory in [commandline_args.dir]:
         for root, dirs, files in os.walk(directory, topdown=False):
 
             all_items = dirs + files
@@ -304,9 +328,11 @@ def main():
                 if item.upper() in BAD_IDEAS_NAMES:
                     type_newname(item, root)
 
-                item = clean_item(item, root)
-                while item:
-                    item = clean_item(item, root)
+                item_cleaned = clean_item(item, root)
+             #   while item:
+             #       item = clean_item(item, root)
+                    
+                debug('item="{}", item_cleaned="{}"'.format(item, item_cleaned) )
 
 
 if __name__ == '__main__':
