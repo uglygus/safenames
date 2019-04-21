@@ -141,10 +141,10 @@ def type_newname(item, root):
     # overwrites silently if newname exists
     rename_item(os.path.join(root, item), os.path.join(root, newname))
 
-def trimwhite(filename):
-    debug('trimwhite(filename="{}")'.format(filename))
+def collapsewhite(filename):
+    debug('collapsewhite(filename="{}")'.format(filename))
     filename = ' '.join(filename.split())
-    debug('trimwhite(filename="{}")'.format(filename))
+    debug('collapsewhite(filename="{}")'.format(filename))
     return filename
 
 def replace_bad_chars(filename, bad_chars):
@@ -231,8 +231,8 @@ def clean_item(item, root):
 
     item_clean = replace_bad_chars(item_clean, bad_chars_all)
 
-    if commandline_args.trimwhite:
-        item_clean = trimwhite(item_clean)
+    if commandline_args.collapsewhite:
+        item_clean = collapsewhite(item_clean)
 
     if item_clean != item:
         item_clean = name_exists(os.path.join(root, item_clean))
@@ -241,7 +241,7 @@ def clean_item(item, root):
 
 
 
-        print('{}{}'.format(root, item))
+        print('{}/{}'.format(root, item))
         print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): '.format(item, item_clean), end="")
         ch = getch()
         print(ch)
@@ -300,10 +300,9 @@ def main():
     #    global log_debug
     global commandline_args
 
-    parser = argparse.ArgumentParser(
-        description="Catch and correct direcotry and filenames that are not cross compatible. ")
+    parser = argparse.ArgumentParser(description="Catch and correct directory and filenames that are not cross compatible. ")
     parser.add_argument("dir", help='directory to clean')
-    parser.add_argument('--trimwhite', action='store_true', help='collapse multple white spaces into one.')
+    parser.add_argument('--collapsewhite', action='store_true', help='collapse multple white spaces into one " " also trims any leading and trailing whitespace')
     parser.add_argument('--debug', action='store_true', help='more debug info')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='list everyfile as processed')
