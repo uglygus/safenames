@@ -4,6 +4,23 @@
 Walks a directory tree and tests each file and directory for cross platform legality.
 Requires user confirmation before any changes are made.
 
+# Usage
+```
+usage: safenames.py [-h] [--collapsewhite] [--debug] [-v] dir
+
+Catch and correct directory and filenames that are not cross compatible.
+
+positional arguments:
+  dir              directory to clean
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --collapsewhite  collapse multple white spaces into one " " also trims any
+                   leading and trailing whitespace)
+  --debug          more debug info
+  -v, --verbose    list everyfile as processed
+```
+
 ### Strips Windows illegals
 
 * Control characters `0x00–0x1f 0x7F`
@@ -36,10 +53,10 @@ Requires user confirmation before any changes are made.
 
 * hyphen `-`
 
+### Collapses whitespace
+optionally with `--collapsewhite`  collapses multple white spaces into one " " also trims any leading and trailing whitespace
 
-## recognizes OSX system files
-and gives the option to skip them.
-
+### Recognizes OSX system files and gives the option to skip them.
 * Icon\r
 * .AppleDouble[...]::EA::com.apple.quarantine
 * *.abcdg (Addressbook file)
@@ -47,15 +64,8 @@ and gives the option to skip them.
 * *.abcdp (Addressbook file)
 * *.abcds (Addressbook file)
 
-## Usage
 
-`safefilenames.py [-h] dir`
-
-## Bugs
-
-* Please report them on github.
-
-## Todo
+# To do
 * catch Windows anomolies periods and spaces only names not allowed
 * catch windows files ending in period
 * -v --verbose option
