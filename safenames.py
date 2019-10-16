@@ -10,7 +10,6 @@ Tested on Mac, Linux and OSX
 
 """
 
-
 import os
 import argparse
 import sys
@@ -52,16 +51,15 @@ else:
             sys.exit()
         return ch
 
-bad_windows_chars = r':<>"\/|?*' + '\n' + '\r' + '\x7F'
+BAD_WINDOWS_CHARS = r':<>"\/|?*' + '\n' + '\r' + '\x7F'
 for x in range(0, 31):
-    bad_windows_chars += chr(x)
+    BAD_WINDOWS_CHARS += chr(x)
 
-bad_linux_chars = "/" + "\00"
-bad_mac_chars = ":" + "\00"
-bad_ideas_chars = '\t'
+BAD_LINUX_CHARS = "/" + "\00"
+BAD_MAC_CHARS = ":" + "\00"
+BAD_IDEAS_CHARS = '\t'
 
-bad_chars_all = bad_windows_chars + \
-    bad_linux_chars + bad_mac_chars + bad_ideas_chars
+bad_chars_all = BAD_WINDOWS_CHARS + BAD_LINUX_CHARS + BAD_MAC_CHARS + BAD_IDEAS_CHARS
 
 # must be uppercase
 BAD_WINDOWS_NAMES = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
@@ -72,7 +70,6 @@ BAD_WINDOWS_NAMES = ['CON', 'PRN', 'AUX', 'NUL', 'CLOCK$',
                      ]
 
 BAD_IDEAS_NAMES = ['-']
-
 
 commandline_args = None
 
@@ -105,7 +102,7 @@ def ends_in_white_space(item):
 
 
 def printable(char):
-    """ Return true is char is printable in the terminal. """
+    """ Return a printable version of the character. """
 
     if char is None:
         return ''
@@ -134,7 +131,7 @@ def type_newname(item, root):
     debug('type_newname(item={}, root={})'.format(item, root))
 
     print(os.path.join(root, item))
-    print('illegal Filename: ', item)
+    print('illegal filename: ', item)
     subitem = item + '_legal'
     newname = input('Enter new filename  default:[' + subitem + ']: ')
 
@@ -157,6 +154,7 @@ def collapsewhite(filename):
 
 def replace_bad_chars(filename, bad_chars):
     """ Returns filename with bad characters replaced with underscores. """
+    
     debug('replace_bad_chars(filename="{}" bad_chars="{}")'.format(
         filename, bad_chars))
     for c in bad_chars:
@@ -175,7 +173,7 @@ def name_exists(item):
     """
 
     debug('name_exists(item={})'.format(item))
-    xxx, item_filename = os.path.split(item)
+    item_filename = os.path.basename(item)
 
     if os.path.exists(item):
         print('"{}" already exists updating version.'.format(item_filename))
@@ -233,13 +231,13 @@ def clean_item(item, root):
     if ':' in item and (item.endswith('.abcdg') or item.endswith(
             '.abcdi') or item.endswith('.abcdp') or item.endswith('.abcds')):
             # - we should turn this back on if we add a --verbose flag
-            # '"{}" contains an illegal colon but OSX Address Book file. Will not change.'.format(item))
+            # print('"{}" contains an illegal colon but OSX Address Book file. Will not change.'.format(item))
         return
 
     if '.AppleDouble' in root:
         if '.Parent::EA' in item or '::EA::' in item or '::EA' in item:
             # - we should turn this back on if we add a --verbose flag
-            # '"{}" contains an illegal colon but is an OSX Appledouble file. Will not change.'.format(item))
+            # print('"{}" contains an illegal colon but is an OSX Appledouble file. Will not change.'.format(item))
             return
 
     item_clean = item
