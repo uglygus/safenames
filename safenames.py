@@ -252,7 +252,7 @@ def clean_item(item, root):
 
         xxx, item_clean = os.path.split(item_clean)
 
-        print('{}/{}'.format(root, item)), end='', flush=True)
+        print('{}/{}'.format(root, item)))
         print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): '.format(item, item_clean), end='',  flush=True)
         ch = getch()
         print(ch)
@@ -284,7 +284,7 @@ def clean_item(item, root):
 
         print('{}/{}'.format(root, fname))
         # , end='', flush=True)
-        print('strip trailing whitespace? (Y/n/t/x : Yes/no/type/delete)')
+        print('strip trailing whitespace? (Y/n/t/x : Yes/no/type/delete)', end='',  flush=True)
         ch = getch().lower()
         print(ch)
 
