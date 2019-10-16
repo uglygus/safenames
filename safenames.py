@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 """
+
 safenames.py
 Walks a directory tree and tests each file and directory for cross platform legality.
 Requires user confirmation before any changes are made.
 
 Tested on Mac, Linux and OSX
+
 """
 
 
@@ -141,7 +143,7 @@ def type_newname(item, root):
 
     print('newname=', newname)
 
-    # overwrites silently if newname exists
+    # FIX THIS!! overwrites silently if newname exists
     rename_item(os.path.join(root, item), os.path.join(root, newname))
 
 
@@ -252,8 +254,9 @@ def clean_item(item, root):
 
         xxx, item_clean = os.path.split(item_clean)
 
-        print('{}/{}'.format(root, item)))
+        print('{}/{}'.format(root, item)), end='', flush=True)
         print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): '.format(item, item_clean), end='',  flush=True)
+
         ch = getch()
         print(ch)
 
@@ -284,7 +287,9 @@ def clean_item(item, root):
 
         print('{}/{}'.format(root, fname))
         # , end='', flush=True)
+
         print('strip trailing whitespace? (Y/n/t/x : Yes/no/type/delete)', end='',  flush=True)
+
         ch = getch().lower()
         print(ch)
 
