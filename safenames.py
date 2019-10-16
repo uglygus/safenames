@@ -1,21 +1,24 @@
-#!/usr/bin/env python
-#
-#
+#!/usr/bin/env python3
+
 """
+
 safenames.py
 Walks a directory tree and tests each file and directory for cross platform legality.
 Requires user confirmation before any changes are made.
 
 Tested on Mac, Linux and OSX
+
 """
 
-from __future__ import print_function
+<<<<<<< HEAD
+#from __future__ import print_function
+=======
+>>>>>>> master
 
 import os
 import argparse
 import sys
 import re
-
 
 try:
     import tty
@@ -79,12 +82,14 @@ commandline_args = None
 
 
 def debug(message):
+    """ Print debug messages. If debug is activated, otherwise do nothing. """
     global commandline_args
     if commandline_args.debug:
         print(message)
 
 
 def is_bad_char(filename, charlist):
+    """ Return true if filename contains a bad character from the charlist. """
     debug('is_bad_char({}, {})'.format(filename, charlist))
     for char in charlist:
         if char in filename:
@@ -95,6 +100,7 @@ def is_bad_char(filename, charlist):
 
 
 def ends_in_white_space(item):
+    """ Return true if the string ends in whitespace. """
     debug('ends_in_white_space(item={})'.format(item))
     if item == item.rstrip():
         return False
@@ -103,6 +109,8 @@ def ends_in_white_space(item):
 
 
 def printable(char):
+    """ Return true is char is printable in the terminal. """
+
     if char is None:
         return ''
     if char == "\n":
@@ -126,29 +134,35 @@ def printable(char):
 
 
 def type_newname(item, root):
+    """ manually type a new filename. """
     debug('type_newname(item={}, root={})'.format(item, root))
 
     print(os.path.join(root, item))
     print('illegal Filename: ', item)
     subitem = item + '_legal'
-    newname = raw_input('Enter new filename  default:[' + subitem + ']: ')
+    newname = input('Enter new filename  default:[' + subitem + ']: ')
 
     if newname == '':
         newname = subitem
 
     print('newname=', newname)
 
-    # overwrites silently if newname exists
+    # FIX THIS!! overwrites silently if newname exists
     rename_item(os.path.join(root, item), os.path.join(root, newname))
 
+
 def collapsewhite(filename):
+    """ Returns filename with whitespace stripped and collapsed. """
     debug('collapsewhite(filename="{}")'.format(filename))
     filename = ' '.join(filename.split())
     debug('collapsewhite(filename="{}")'.format(filename))
     return filename
 
+
 def replace_bad_chars(filename, bad_chars):
-    debug('replace_bad_chars(filename="{}" bad_chars="{}")'.format(filename,bad_chars))
+    """ Returns filename with bad characters replaced with underscores. """
+    debug('replace_bad_chars(filename="{}" bad_chars="{}")'.format(
+        filename, bad_chars))
     for c in bad_chars:
         if (c in filename):
             print('\tbad character "{}"'.format(printable(c)))
@@ -158,6 +172,12 @@ def replace_bad_chars(filename, bad_chars):
 
 
 def name_exists(item):
+    """
+    Returns new suggested name if name already exists.
+    Appends a version number in parenthesis.
+    ie. newfilename (1).txt
+    """
+
     debug('name_exists(item={})'.format(item))
     xxx, item_filename = os.path.split(item)
 
@@ -186,6 +206,7 @@ def name_exists(item):
 
 
 def rename_item(old, new):
+    """ Rename file. """
     debug('rename_item(old={}, new={})'.format(old, new))
     new = name_exists(new)
     print('old="' + old + '",  new="' + new)
@@ -197,7 +218,8 @@ def rename_item(old, new):
 
 def clean_item(item, root):
     """
-    returns new filename
+    Given a filename (item)
+    Returns new filename with all corrections applied.
     """
     debug('clean_item(item={}, root={})'.format(item, root))
     old = os.path.join(root, item)
@@ -209,23 +231,20 @@ def clean_item(item, root):
 
     if item == "Icon\r":
         # - we should this back on if we add a --verbose flag
-        #print('"Icon\\r" : Not Windows compatible but OSX system filename. Will not change.')
+        # print('"Icon\\r" : Not Windows compatible but OSX system filename. Will not change.')
         return
 
     if ':' in item and (item.endswith('.abcdg') or item.endswith(
             '.abcdi') or item.endswith('.abcdp') or item.endswith('.abcds')):
-        #print(
             # - we should turn this back on if we add a --verbose flag
-            #'"{}" contains an illegal colon but OSX Address Book file. Will not change.'.format(item))
+            # '"{}" contains an illegal colon but OSX Address Book file. Will not change.'.format(item))
         return
 
     if '.AppleDouble' in root:
         if '.Parent::EA' in item or '::EA::' in item or '::EA' in item:
-            #print(
-                # - we should turn this back on if we add a --verbose flag
-                #'"{}" contains an illegal colon but is an OSX Appledouble file. Will not change.'.format(item))
+            # - we should turn this back on if we add a --verbose flag
+            # '"{}" contains an illegal colon but is an OSX Appledouble file. Will not change.'.format(item))
             return
-
 
     item_clean = item
 
@@ -239,10 +258,15 @@ def clean_item(item, root):
 
         xxx, item_clean = os.path.split(item_clean)
 
+<<<<<<< HEAD
 
 
         print('{}/{}'.format(root, item))
-        print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): '.format(item, item_clean), end="")
+        print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): \n'.format(item, item_clean), end="")
+=======
+        print('{}/{}'.format(root, item)), end='', flush=True)
+        print('replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): '.format(item, item_clean), end='',  flush=True)
+>>>>>>> master
         ch = getch()
         print(ch)
 
@@ -257,7 +281,7 @@ def clean_item(item, root):
             os.unlink(os.path.join(root, item))
 
         if ch.lower() == 't':
-            new_name = raw_input("new filename: ")
+            new_name = input("new filename: ")
             new = os.path.join(root, new_name)
             # print ('old=', old, '\nnew=', new)
             rename_item(old, new)
@@ -272,15 +296,16 @@ def clean_item(item, root):
             print('file "{}" is only whitespace!'.format(root))
 
         print('{}/{}'.format(root, fname))
+        # , end='', flush=True)
         print('strip trailing whitespace? (Y/n/t/x : Yes/no/type/delete)')
-        ch = getch()
+        ch = getch().lower()
         print(ch)
 
-        if ch.lower() == 'x':
+        if ch == 'x':
             os.unlink(os.path.join(root, item))
 
-        if ch.lower() == 't':
-            new_name = raw_input("new filename: ")
+        if ch == 't':
+            new_name = input("new filename: ")
             new = os.path.join(root, new_name)
             # print ('old=', old, '\nnew=', new)
             rename_item(old, new)
@@ -296,13 +321,15 @@ def clean_item(item, root):
 
 
 def main():
-
+    """ Do the main thing. """
     #    global log_debug
     global commandline_args
 
-    parser = argparse.ArgumentParser(description="Catch and correct directory and filenames that are not cross compatible. ")
+    parser = argparse.ArgumentParser(
+        description="Catch and correct directory and filenames that are not cross compatible. ")
     parser.add_argument("dir", help='directory to clean')
-    parser.add_argument('--collapsewhite', action='store_true', help='collapse multple white spaces into one " " also trims any leading and trailing whitespace')
+    parser.add_argument('-c', '--collapsewhite', action='store_true',
+                        help='collapse multple white spaces into one " " also trims any leading and trailing whitespace')
     parser.add_argument('--debug', action='store_true', help='more debug info')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='list everyfile as processed')
@@ -310,7 +337,7 @@ def main():
     commandline_args = parser.parse_args()
 
     if commandline_args.debug:
-        commandline_args.verbose=True
+        commandline_args.verbose = True
 
     debug('commandline_args.verbose = {}'.format(commandline_args.verbose))
     debug('commandline_args.debug   = {}'.format(commandline_args.debug))
@@ -328,10 +355,12 @@ def main():
                     type_newname(item, root)
 
                 item_cleaned = clean_item(item, root)
-             #   while item:
-             #       item = clean_item(item, root)
-                    
-                debug('item="{}", item_cleaned="{}"'.format(item, item_cleaned) )
+                # while item:
+                # item = clean_item(item, root)
+
+                debug(
+                    'item="{}", item_cleaned="{}"'.format(
+                        item, item_cleaned))
 
 
 if __name__ == '__main__':
