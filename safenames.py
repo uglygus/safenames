@@ -79,16 +79,6 @@ def debug(message):
     if commandline_args.debug:
         print(message)
 
-
-def ends_in_white_space(item):
-    """ Return true if the string ends in whitespace. """
-
-    debug('ends_in_white_space(item={})'.format(item))
-    if item == item.rstrip():
-        return False
-    return True
-
-
 def printable(char):
     """ Return a printable version of the character. """
 
