@@ -280,6 +280,21 @@ def has_warning(item, root):
 
     return False, messages
 
+def ends_in_period(fname):
+    """ strips trailing period """
+    debug(f'ends_in_period(fname={fname})')
+
+    messages = []
+
+    file_nameonly, file_ext = os.path.splitext(fname)
+    
+    fname_stripped = file_nameonly.rstrip(". ") + file_ext.rstrip(". ")
+
+    if fname_stripped != fname:
+        messages.append('ends in a period')
+
+    return fname_stripped, messages
+
 def trailing_whitespace(fname):
     """ strips trailing whitespace """
     debug('trailing_whitespace(fname={})'.format(fname))
@@ -354,6 +369,10 @@ def clean_item(item, root):
 
     item_clean, new_messages = leading_whitespace(item_clean)
     messages.append(new_messages)
+
+    item_clean, new_messages = ends_in_period(item_clean)
+    messages.append(new_messages)
+
 
     if commandline_args.collapsewhite:
         item_clean, new_messages = collapsewhite(item_clean)
