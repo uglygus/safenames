@@ -163,7 +163,7 @@ def collapsewhite(filename):
     debug('collapsewhite(filename="{}")'.format(filename))
     newfilename = " ".join(filename.split())
     if newfilename != filename:
-        messages.append("collapsed whitespace")
+        messages.append("collapsable whitespace")
     debug('collapsewhite(filename="{}")'.format(filename))
     return newfilename, messages
 
@@ -340,7 +340,7 @@ def ends_in_period(fname):
 
 
 def trailing_whitespace(fname):
-    """strips trailing whitespace"""
+    """Strips trailing whitespace."""
     debug("trailing_whitespace(fname={})".format(fname))
 
     messages = []
@@ -356,7 +356,7 @@ def trailing_whitespace(fname):
 
 
 def leading_whitespace(fname):
-    """leading whitespace"""
+    """Strips leading whitespace."""
     debug("leading_whitespace(fname={})".format(fname))
 
     messages = []
@@ -437,7 +437,6 @@ def clean_item(item, root):
         print_messages(messages)
 
         if not warn_bool:
-
             print(
                 'Replace "{}" with "{}"?  (Y/n/t/x : Yes/no/type/delete): y'.format(
                     item, item_clean
@@ -568,5 +567,4 @@ def main():
 
 
 if __name__ == "__main__":
-    return_code = main()
-    sys.exit(return_code)
+    sys.exit(main())
