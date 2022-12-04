@@ -381,8 +381,8 @@ def perl_module(fname):
 
     file_nameonly, file_ext = os.path.splitext(fname)
 
-    if file_ext.casefold() == ".3pm".casefold():
-        messages.append("probably a perl module - skipping")
+    if file_ext == "Image::ExifTool":
+        messages.append("ExifTool man pages have an illegal name - skipping")
 
     return fname, messages
 
