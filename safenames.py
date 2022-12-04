@@ -294,7 +294,9 @@ def has_warning(item, root):
 
     if "/Photos Library.photoslibrary" in root:
         messages.append(
-            'WARNING: "{}" is part of the MacOS Photos App Library. Will not change.'.format(item)
+            'WARNING: "{}" is part of the MacOS Photos App Library. Will not change.'.format(
+                item
+            )
         )
         return True, messages
 
@@ -371,6 +373,20 @@ def leading_whitespace(fname):
     return fname_stripped, messages
 
 
+def perl_module(fname):
+    """Tries to identify if the fname is a perl module"""
+    debug("perl_module(fname={})".format(fname))
+
+    messages = []
+
+    file_nameonly, file_ext = os.path.splitext(fname)
+
+    if file_ext.casefold() == ".3pm".casefold():
+        messages.append("probably a perl module - skipping")
+
+    return fname, messages
+
+
 def print_messages(messages):
     """messages is a list of lists. prints each item in each list"""
     for m in messages:
@@ -398,10 +414,14 @@ def clean_item(item, root):
 
     item_clean = item
 
-    item_clean, new_messages = bad_windows_name(item_clean)
+    item_clean, new_messages = perl_module(item_clean)
     messages.append(new_messages)
 
-    item_clean, new_messages = replace_bad_chars(item_clean, BAD_CHARS_ALL)
+    if item == item_clean:
+        item_clean, new_messages = replace_bad_chars(item_clean, BAD_CHARS_ALL)
+        messages.append(new_messages)
+
+    item_clean, new_messages = bad_windows_name(item_clean)
     messages.append(new_messages)
 
     item_clean, new_messages = only_whitespace(item_clean)
@@ -508,7 +528,10 @@ def main():
         description="Catch and correct directory and filenames that are not cross compatible. "
     )
     parser.add_argument(
-        "input", nargs="*", default=None, help="accepts files and/or folders to be cleaned"
+        "input",
+        nargs="*",
+        default=None,
+        help="accepts files and/or folders to be cleaned",
     )
     parser.add_argument(
         "-c",
@@ -517,7 +540,9 @@ def main():
         help='collapse multple white spaces into one " " also trims any leading and trailing whitespace',
     )
     parser.add_argument("--debug", action="store_true", help="more debug info")
-    parser.add_argument("-v", "--verbose", action="store_true", help="list everyfile as processed")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="list everyfile as processed"
+    )
 
     commandline_args = parser.parse_args()
 
