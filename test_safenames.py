@@ -1,13 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 #
 """
 test_safenames.py
 """
-from __future__ import print_function
-import os
 import errno
+
+# from __future__ import print_function
+import os
 import shutil
+from pathlib import Path
 from subprocess import call
 
 
@@ -28,26 +30,28 @@ def rmtreequiet(targetpath):
 
 
 def main():
-    tmpdir = '/tmp/test_safenames/'
+    tmpdir = "/tmp/test_safenames/"
 
     rmtreequiet(tmpdir)
     mkdirquiet(tmpdir)
 
     # , 'ends in space ', 'ends in space and tab \t']
     # ,'| three <> illegals', 'ends in tab\t']
-    badnames = ['|starts with illegal']
+    badnames = ["|starts with illegal"]
 
     for fn in badnames:
         fn = tmpdir + fn
-        open(fn, 'a').close()
+        open(fn, "a").close()
 
-    call(["./safenames.py", tmpdir, '--debug'])
+    exif_perl_module = Path(tmpdir + "Image::ExifTool::WritePDF.3pm")
+
+    Path(exif_perl_module).touch()
+
+    call(["./safenames.py", tmpdir, "--debug"])
 
 
+# rmtreequiet(tmpdir)
 
 
-   #rmtreequiet(tmpdir)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

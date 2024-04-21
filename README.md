@@ -5,6 +5,7 @@ Walks a directory tree and tests each file and directory for cross platform lega
 Requires user confirmation before any changes are made.
 
 # Usage
+
 ```
 usage: safenames.py [-h] [--collapsewhite] [--debug] [-v] dir
 
@@ -21,7 +22,7 @@ optional arguments:
   -v, --verbose    list everyfile as processed
 ```
 
-### Strips Windows illegals
+## Strips Windows illegals
 
 * Control characters `0x00–0x1f 0x7F`
 * Reserved characters `/ ? < > \ : * | "`
@@ -37,15 +38,15 @@ optional arguments:
 		`PAGEFILE.SYS $SECURE $UPCASE $VOLUME $EXTEND $EXTEND\$OJID`
 		`$EXTEND\$QUOTA $EXTEND\$REPARSE`
 
-### Strips Mac illegals
+## Strips Mac illegals
 
 * Reserved characters `: 0x00`
 
-### Strips Linux illegals
+## Strips Linux illegals
 
 * Reserved characters `/ 0x00`
 
-### Strips characters that are a bad idea
+## Strips characters that are a bad idea
 
 * tab `\t`
 
