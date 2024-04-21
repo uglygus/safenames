@@ -129,7 +129,7 @@ def printable(char):
     if char == "\007":
         return "\\BEL"
     if ord(char) == 127:
-        return "\DEL"
+        return "\\DEL"
     if ord(char) <= 31:
         return "\\" + str(ord(char))
 
@@ -196,7 +196,7 @@ def name_exists(item):
     if os.path.exists(item):
         print('"{}" already exists updating version.'.format(item_filename))
         root, ext = os.path.splitext(item)
-        p = re.compile("\((\d+)\)\Z")
+        p = re.compile(r"\((\d+)\)$")
         m = p.findall(root)
 
         if not m:
@@ -292,6 +292,15 @@ def has_warning(item, root):
         )
         return True, messages
 
+    if item.startswith("Image::ExifTool") and item.endswith(".3pm"):
+        messages.append("WARNING: ExifTool man pages have an illegal name - skipping")
+        return True, messages
+
+    print("item==", item)
+    if item == "File::RandomAccess.3pm":
+        messages.append("WARNING: ExifTool man pages have an illegal name - skipping")
+        return True, messages
+
     if "/Photos Library.photoslibrary" in root:
         messages.append(
             'WARNING: "{}" is part of the MacOS Photos App Library. Will not change.'.format(
@@ -373,20 +382,6 @@ def leading_whitespace(fname):
     return fname_stripped, messages
 
 
-def perl_module(fname):
-    """Tries to identify if the fname is a perl module"""
-    debug("perl_module(fname={})".format(fname))
-
-    messages = []
-
-    file_nameonly, file_ext = os.path.splitext(fname)
-
-    if file_ext == "Image::ExifTool":
-        messages.append("ExifTool man pages have an illegal name - skipping")
-
-    return fname, messages
-
-
 def print_messages(messages):
     """messages is a list of lists. prints each item in each list"""
     for m in messages:
@@ -401,7 +396,7 @@ def clean_item(item, root):
     """Given a filename (item)
     Returns new filename with all corrections applied.
     """
-    debug("clean_item(item={}, root={})".format(item, root))
+    debug("\nclean_item(item={}, root={})".format(item, root))
 
     old = os.path.join(root, item)
 
@@ -414,12 +409,17 @@ def clean_item(item, root):
 
     item_clean = item
 
-    item_clean, new_messages = perl_module(item_clean)
-    messages.append(new_messages)
+    # item_clean, new_messages = perl_ExifTool_module(item_clean)
+    # messages.append(new_messages)
 
-    if item == item_clean:
-        item_clean, new_messages = replace_bad_chars(item_clean, BAD_CHARS_ALL)
-        messages.append(new_messages)
+    # print("messages == ", messages)
+    #  input("after perl_exiftool_module...")
+
+    # if len(messages[0]) == 0:
+    #    print("messages are empty b/c this is not an EXIFTOOL module", item_clean)
+    # only check this if the file is not an Image::ExifTool::... file
+    item_clean, new_messages = replace_bad_chars(item_clean, BAD_CHARS_ALL)
+    messages.append(new_messages)
 
     item_clean, new_messages = bad_windows_name(item_clean)
     messages.append(new_messages)
